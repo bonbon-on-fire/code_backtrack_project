@@ -75,7 +75,7 @@ corrections happen while coding, and over time, whether that rate changes.
   - Test: corrections/minute computed from session duration (known timestamps in,
     known rate out)
   - Test: zero-duration session → rate is 0, not a crash
-- [ ] **3. Event classification** (`listener.py`, logic half) — (key, modifier state) →
+- [x] **3. Event classification** (`listener.py`, logic half) — (key, modifier state) →
   `Category` mapping, modifier tracking. Tested with synthetic events
   - Test: Backspace → `BACKSPACE`; Delete → `DELETE`; letter/other key → `OTHER`
   - Test: Ctrl+Backspace → `CTRL_BACKSPACE`; Ctrl+Delete → `CTRL_DELETE`;
