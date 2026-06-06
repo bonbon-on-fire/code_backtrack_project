@@ -7,7 +7,7 @@ corrections happen while coding, and over time, whether that rate changes.
 
 ## Goals
 - [ ] Count correction keys globally while the app is running
-- [ ] Global hotkey (Ctrl+Shift+Backspace) toggles recording on/off — minimal usage friction
+- [ ] Global hotkey (Ctrl+Alt+B) toggles recording on/off — minimal usage friction
 - [ ] Show a session summary (counts, duration, corrections/minute)
 - [ ] Compute correction ratio (correction keys ÷ total keystrokes)
 - [ ] Persist session history to spot trends over time
@@ -56,7 +56,7 @@ corrections happen while coding, and over time, whether that rate changes.
 ## Milestones
 | # | Milestone | Status |
 |---|-----------|--------|
-| 1 | **v1 — Counter**: console app, global hotkey (Ctrl+Shift+Backspace) starts/stops a session, count correction keys + total keystrokes, summary on stop | ☐ |
+| 1 | **v1 — Counter**: console app, global hotkey (Ctrl+Alt+B) starts/stops a session, count correction keys + total keystrokes, summary on stop | ☐ |
 | 2 | **v2 — Insight**: SQLite session history, correction ratio, per-app filtering/breakdown (active-window process name) | ☐ |
 | 3 | **v3 — Daily driver**: tray icon with live count, trend charts, burst detection (N+ backspaces in a row = rewrite vs typo) | ☐ |
 
@@ -80,7 +80,8 @@ corrections happen while coding, and over time, whether that rate changes.
   - Test: Backspace → `BACKSPACE`; Delete → `DELETE`; letter/other key → `OTHER`
   - Test: Ctrl+Backspace → `CTRL_BACKSPACE`; Ctrl+Delete → `CTRL_DELETE`;
     Ctrl+Z → `CTRL_Z`
-  - Test: Ctrl+**Shift**+Backspace → toggle signal, **never counted** in any category
+  - Test: Ctrl+Alt+B → toggle signal, **never counted** in any category
+  - Test: Ctrl+Shift+Backspace → `CTRL_BACKSPACE` (shift doesn't change backspace in editors)
   - Test: Ctrl+Shift+Z (redo) → `OTHER`, not `CTRL_Z`
   - Test: left and right Ctrl both register as Ctrl held
   - Test: modifier release tracked — Backspace *after* Ctrl released → `BACKSPACE`,
@@ -108,9 +109,11 @@ corrections happen while coding, and over time, whether that rate changes.
   - Toggle across two sessions → second session starts from zero
 
 ## Decisions
-- **Hotkey**: Ctrl+Shift+Backspace toggles recording. The app launches idle; the hotkey
-  starts a session, pressing it again stops and prints the summary. The hotkey press
-  itself is never counted (Shift check happens before Ctrl+Backspace classification).
+- **Hotkey**: Ctrl+Alt+B toggles recording. The app launches idle; the hotkey starts a
+  session, pressing it again stops and prints the summary. The hotkey press itself is
+  never counted. (Originally Ctrl+Shift+Backspace — abandoned because the hook only
+  observes keys, and that combo passes through to the focused app as a word-delete.
+  Lesson: a hotkey must be a no-op in apps, not just unbound as a shortcut.)
 - **Ctrl+Z**: counted as its own category (cheap to add; data can't be retrofitted).
 - **Key-repeat**: every repeat counts — each repeat deletes a real character, so it's
   genuine correction volume. No thresholding in v1.

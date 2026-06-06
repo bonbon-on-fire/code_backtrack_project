@@ -58,11 +58,42 @@ def test_ctrl_z_arrives_as_vk(classifier):
     assert classifier.on_press(KeyCode.from_vk(0x5A)) is Category.CTRL_Z
 
 
-def test_ctrl_shift_backspace_is_toggle_never_counted(classifier):
-    press_chord(classifier, Key.ctrl_l, Key.shift)
-    result = classifier.on_press(Key.backspace)
+def test_ctrl_alt_b_is_toggle_never_counted(classifier):
+    press_chord(classifier, Key.ctrl_l, Key.alt_l)
+    result = classifier.on_press(KeyCode.from_char("b"))
     assert result is Signal.TOGGLE
     assert not isinstance(result, Category)
+
+
+def test_ctrl_alt_b_as_control_char(classifier):
+    # With Ctrl held, Windows reports 'b' as the STX control char '\x02'.
+    press_chord(classifier, Key.ctrl_l, Key.alt_l)
+    assert classifier.on_press(KeyCode.from_char("\x02")) is Signal.TOGGLE
+
+
+def test_ctrl_alt_b_as_vk(classifier):
+    press_chord(classifier, Key.ctrl_l, Key.alt_l)
+    assert classifier.on_press(KeyCode.from_vk(0x42)) is Signal.TOGGLE
+
+
+def test_ctrl_b_without_alt_is_other(classifier):
+    press_chord(classifier, Key.ctrl_l)
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+
+
+def test_alt_b_without_ctrl_is_other(classifier):
+    press_chord(classifier, Key.alt_l)
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+
+
+def test_plain_b_is_other(classifier):
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+
+
+def test_ctrl_shift_backspace_is_word_correction_not_toggle(classifier):
+    # Shift doesn't change Backspace in editors; this deletes a word.
+    press_chord(classifier, Key.ctrl_l, Key.shift)
+    assert classifier.on_press(Key.backspace) is Category.CTRL_BACKSPACE
 
 
 def test_ctrl_shift_z_redo_is_other(classifier):

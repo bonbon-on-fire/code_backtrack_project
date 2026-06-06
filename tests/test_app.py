@@ -23,12 +23,13 @@ def app(out):
 
 
 def toggle(app):
-    """Press and release Ctrl+Shift+Backspace."""
+    """Press and release Ctrl+Alt+B."""
+    b = KeyCode.from_char("b")
     app.on_press(Key.ctrl_l)
-    app.on_press(Key.shift)
-    app.on_press(Key.backspace)
-    app.on_release(Key.backspace)
-    app.on_release(Key.shift)
+    app.on_press(Key.alt_l)
+    app.on_press(b)
+    app.on_release(b)
+    app.on_release(Key.alt_l)
     app.on_release(Key.ctrl_l)
 
 

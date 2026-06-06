@@ -16,7 +16,7 @@ from .counter import Category, Counter, SessionStats
 from .listener import EventClassifier, Signal
 from .reporter import format_status_line, format_summary
 
-HOTKEY_HINT = "Ctrl+Shift+Backspace"
+HOTKEY_HINT = "Ctrl+Alt+B"
 
 
 class App:
