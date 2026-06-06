@@ -77,6 +77,72 @@ def test_cli_apps_end_to_end(tmp_path, capsys):
     assert "Code.exe" in capsys.readouterr().out
 
 
+def test_cli_list_shows_all_sessions(tmp_path, capsys):
+    seeded_storage(tmp_path)
+    main(["list", "--db", str(tmp_path / "sessions.db")])
+    out = capsys.readouterr().out
+    assert "2026-06-06 14:30:00" in out
+    assert "2026-06-07 09:00:00" in out
+    assert "2 sessions" in out
+
+
+def test_cli_delete_by_exact_datetime(tmp_path, capsys):
+    storage = seeded_storage(tmp_path)
+    main(["delete", "2026-06-06", "14:30:00", "--db", str(tmp_path / "sessions.db")])
+    assert "deleted session 2026-06-06 14:30:00" in capsys.readouterr().out
+    remaining = storage.load_sessions()
+    assert [r.started_at for r in remaining] == ["2026-06-07T09:00:00"]
+
+
+def test_cli_delete_by_prefix(tmp_path, capsys):
+    storage = seeded_storage(tmp_path)
+    main(["delete", "2026-06-07", "--db", str(tmp_path / "sessions.db")])
+    assert "deleted session 2026-06-07 09:00:00" in capsys.readouterr().out
+    assert len(storage.load_sessions()) == 1
+
+
+def test_cli_delete_ambiguous_prefix_refuses(tmp_path, capsys):
+    storage = seeded_storage(tmp_path)
+    main(["delete", "2026-06", "--db", str(tmp_path / "sessions.db")])
+    out = capsys.readouterr().out
+    assert "matches 2 sessions" in out
+    assert len(storage.load_sessions()) == 2  # nothing deleted
+
+
+def test_cli_delete_not_found(tmp_path, capsys):
+    storage = seeded_storage(tmp_path)
+    main(["delete", "2030-01-01", "--db", str(tmp_path / "sessions.db")])
+    assert "no session starting with" in capsys.readouterr().out
+    assert len(storage.load_sessions()) == 2
+
+
+def test_cli_delete_all(tmp_path, capsys):
+    storage = seeded_storage(tmp_path)
+    main(["delete", "--all", "--db", str(tmp_path / "sessions.db")])
+    assert "deleted 2 sessions" in capsys.readouterr().out
+    assert storage.load_sessions() == []
+
+
+def test_cli_delete_without_args_explains(tmp_path, capsys):
+    seeded_storage(tmp_path)
+    main(["delete", "--db", str(tmp_path / "sessions.db")])
+    out = capsys.readouterr().out
+    assert "--all" in out  # usage hint, nothing deleted
+
+
+def test_delete_removes_app_rows_too(tmp_path):
+    storage = seeded_storage(tmp_path)
+    first = storage.load_sessions()[0]
+    storage.delete_session(first.id)
+    import sqlite3
+
+    with sqlite3.connect(tmp_path / "sessions.db") as conn:
+        orphans = conn.execute(
+            "SELECT COUNT(*) FROM app_counts WHERE session_id = ?", (first.id,)
+        ).fetchone()[0]
+    assert orphans == 0
+
+
 def test_bare_invocation_runs_tracker(monkeypatch):
     import backspace_tracker.app as app_module
 

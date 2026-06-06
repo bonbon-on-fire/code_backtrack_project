@@ -78,6 +78,19 @@ class Storage:
                 )
         return session_id
 
+    def delete_session(self, session_id: int) -> None:
+        with self._connect() as conn:
+            conn.execute("DELETE FROM app_counts WHERE session_id = ?", (session_id,))
+            conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+
+    def delete_all(self) -> int:
+        """Remove every session; returns how many were deleted."""
+        with self._connect() as conn:
+            count = conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
+            conn.execute("DELETE FROM app_counts")
+            conn.execute("DELETE FROM sessions")
+        return count
+
     def load_sessions(self) -> list[SessionRecord]:
         """All sessions, ordered by start time."""
         with self._connect() as conn:

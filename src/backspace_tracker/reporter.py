@@ -51,6 +51,17 @@ def format_status_line(stats: SessionStats) -> str:
 NO_SESSIONS_HINT = "no sessions yet - run the tracker and toggle a session with Ctrl+Alt+B"
 
 
+def render_list(records: list[SessionRecord]) -> str:
+    """Bare list of stored sessions: date-time and duration only."""
+    if not records:
+        return NO_SESSIONS_HINT
+    lines = ["=== Stored sessions ==="]
+    for r in records:
+        lines.append(f"  {r.started_at.replace('T', ' ')}  ({format_duration(r.stats.duration_seconds)})")
+    lines.append(f"  {len(records)} session{'s' if len(records) != 1 else ''}")
+    return "\n".join(lines)
+
+
 def render_history(records: list[SessionRecord]) -> str:
     """One line per saved session, identified by its start date and time."""
     if not records:
