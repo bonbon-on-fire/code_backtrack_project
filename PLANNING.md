@@ -86,7 +86,7 @@ corrections happen while coding, and over time, whether that rate changes.
   - Test: modifier release tracked — Backspace *after* Ctrl released → `BACKSPACE`,
     not `CTRL_BACKSPACE`
   - Test: repeated Backspace events (key held) → one count per event
-- [ ] **4. Live wiring** — real `pynput.Listener`, hotkey toggles idle ↔ recording,
+- [x] **4. Live wiring** — real `pynput.Listener`, hotkey toggles idle ↔ recording,
   Ctrl+C clean exit
   - Test (mocked callbacks): events while **idle** count nothing
   - Test (mocked callbacks): hotkey → recording starts; hotkey again → session stops
@@ -94,7 +94,7 @@ corrections happen while coding, and over time, whether that rate changes.
   - Test (mocked callbacks): hotkey press itself adds nothing to the new session's
     counts
   - Test: Ctrl+C while recording → session finalized, listener stopped, clean exit
-- [ ] **5. Reporter** (`reporter.py`) — live in-place status line while recording,
+- [x] **5. Reporter** (`reporter.py`) — live in-place status line while recording,
   summary table on session stop
   - Test: status line contains all correction tallies, total, and rate
   - Test: summary includes every category, duration, corrections/min, correction ratio
