@@ -111,7 +111,7 @@ corrections happen while coding, and over time, whether that rate changes.
   - Toggle across two sessions → second session starts from zero
 
 ## v2 Build Order
-- [ ] **1. Storage layer** (`storage.py`) — stdlib `sqlite3`; schema:
+- [x] **1. Storage layer** (`storage.py`) — stdlib `sqlite3`; schema:
   `sessions(id, started_at, duration_seconds, <per-category counts>)` and
   `app_counts(session_id, app, <per-category counts>)`; DB at
   `%LOCALAPPDATA%\backspace-tracker\sessions.db`
@@ -119,7 +119,7 @@ corrections happen while coding, and over time, whether that rate changes.
   - Test: schema auto-created on a fresh DB
   - Test: multiple sessions ordered by start time
   - Test: app rows linked to the right session
-- [ ] **2. Per-app tallies** (`counter.py`) — `record(category, app=None)`;
+- [x] **2. Per-app tallies** (`counter.py`) — `record(category, app=None)`;
   `SessionStats` gains `app_counts`
   - Test: per-app counts sum to the session totals
   - Test: `app=None` lands in `"unknown"`

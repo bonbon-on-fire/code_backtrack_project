@@ -2,7 +2,12 @@
 
 import pytest
 
-from backspace_tracker.counter import CORRECTION_CATEGORIES, Category, Counter
+from backspace_tracker.counter import (
+    CORRECTION_CATEGORIES,
+    UNKNOWN_APP,
+    Category,
+    Counter,
+)
 
 
 class FakeClock:
@@ -74,3 +79,38 @@ def test_ctrl_z_is_a_correction_category():
 
 def test_other_is_not_a_correction():
     assert Category.OTHER not in CORRECTION_CATEGORIES
+
+
+# --- Step 2 (v2) test cases from PLANNING.md: per-app tallies ---
+
+
+def test_per_app_counts_sum_to_session_totals():
+    counter = Counter()
+    counter.record(Category.BACKSPACE, app="Code.exe")
+    counter.record(Category.BACKSPACE, app="notepad.exe")
+    counter.record(Category.OTHER, app="Code.exe")
+    counter.record(Category.CTRL_Z, app="chrome.exe")
+    stats = counter.stats()
+
+    for cat in Category:
+        summed = sum(per_app[cat] for per_app in stats.app_counts.values())
+        assert summed == stats.counts[cat]
+    assert sum(sum(p.values()) for p in stats.app_counts.values()) == stats.total_keystrokes
+
+
+def test_app_none_lands_in_unknown():
+    counter = Counter()
+    counter.record(Category.BACKSPACE)  # no app given
+    counter.record(Category.BACKSPACE, app=None)
+    stats = counter.stats()
+    assert stats.app_counts[UNKNOWN_APP][Category.BACKSPACE] == 2
+
+
+def test_apps_tracked_separately():
+    counter = Counter()
+    counter.record(Category.BACKSPACE, app="Code.exe")
+    counter.record(Category.DELETE, app="notepad.exe")
+    stats = counter.stats()
+    assert stats.app_counts["Code.exe"][Category.BACKSPACE] == 1
+    assert stats.app_counts["Code.exe"][Category.DELETE] == 0
+    assert stats.app_counts["notepad.exe"][Category.DELETE] == 1
