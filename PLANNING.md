@@ -110,6 +110,37 @@ corrections happen while coding, and over time, whether that rate changes.
   - Type while idle (before first toggle / after stop) → nothing counted
   - Toggle across two sessions → second session starts from zero
 
+## v2 Build Order
+- [ ] **1. Storage layer** (`storage.py`) — stdlib `sqlite3`; schema:
+  `sessions(id, started_at, duration_seconds, <per-category counts>)` and
+  `app_counts(session_id, app, <per-category counts>)`; DB at
+  `%LOCALAPPDATA%\backspace-tracker\sessions.db`
+  - Test: save→load round-trip preserves every count
+  - Test: schema auto-created on a fresh DB
+  - Test: multiple sessions ordered by start time
+  - Test: app rows linked to the right session
+- [ ] **2. Per-app tallies** (`counter.py`) — `record(category, app=None)`;
+  `SessionStats` gains `app_counts`
+  - Test: per-app counts sum to the session totals
+  - Test: `app=None` lands in `"unknown"`
+  - Test: all v1 counter tests still pass (regression guard)
+- [ ] **3. Active-window probe** (`activewindow.py`) — ctypes
+  (`GetForegroundWindow` → `QueryFullProcessImageName`), process name only
+  - Test: returns a non-empty string on a real desktop
+  - Test: failure paths (mocked) → `"unknown"`, never a crash
+- [ ] **4. Wire-up** (`app.py`) — probe foreground app per counted event; persist
+  session to SQLite on stop; print `saved session #N`
+  - Test: stats flow into storage on stop (fake probe, no real hook)
+  - Test: probe failure still counts the key (under `"unknown"`)
+- [ ] **5. History CLI** (`__main__.py` + reporter) — `history` lists recent sessions
+  (date, duration, corrections/min, ratio); `apps` shows per-app breakdown
+  - Test: output includes saved sessions with v1 reporter formatting
+  - Test: empty DB → friendly "no sessions yet"
+  - Test: bare `python -m backspace_tracker` still runs the tracker (unchanged)
+- [ ] **6. End-to-end smoke test** (manual) — one session typing in two different
+  apps; `history` shows it; `apps` splits counts between the two processes;
+  a second session appends, doesn't overwrite
+
 ## Decisions
 - **Hotkey**: Ctrl+Alt+B toggles recording. The app launches idle; the hotkey starts a
   session, pressing it again stops and prints the summary. The hotkey press itself is
@@ -117,6 +148,12 @@ corrections happen while coding, and over time, whether that rate changes.
   observes keys, and that combo passes through to the focused app as a word-delete.
   Lesson: a hotkey must be a no-op in apps, not just unbound as a shortcut.)
 - **Ctrl+Z**: counted as its own category (cheap to add; data can't be retrofitted).
+- **v2 dependencies**: none added — ctypes for the window probe (no psutil).
+- **v2 DB location**: `%LOCALAPPDATA%\backspace-tracker\sessions.db` — survives repo
+  moves; not in the project dir.
+- **v2 app identity**: process name only (window titles leak document/file names,
+  violating the privacy principle). Probe failure → key counted under `"unknown"`,
+  so totals stay accurate and only the breakdown degrades.
 - **Key-repeat**: every repeat counts — each repeat deletes a real character, so it's
   genuine correction volume. No thresholding in v1.
 
