@@ -56,9 +56,23 @@ class Storage:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
             conn.executescript(_SCHEMA)
+            self._add_missing_count_columns(conn)
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path)
+
+    @staticmethod
+    def _add_missing_count_columns(conn: sqlite3.Connection) -> None:
+        """Backfill count columns added in later versions (e.g. v2.5 overtype,
+        cut) onto a pre-existing DB. New columns default to 0 so old sessions
+        load unchanged."""
+        for table in ("sessions", "app_counts"):
+            existing = {row[1] for row in conn.execute(f'PRAGMA table_info("{table}")')}
+            for col in _COUNT_COLUMNS:
+                if col not in existing:
+                    conn.execute(
+                        f'ALTER TABLE "{table}" ADD COLUMN "{col}" INTEGER NOT NULL DEFAULT 0'
+                    )
 
     def save_session(self, started_at: datetime, stats: SessionStats) -> int:
         """Persist one finished session; returns its id."""
