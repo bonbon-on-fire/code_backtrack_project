@@ -16,6 +16,8 @@ class Category(Enum):
     DELETE = "delete"
     CTRL_DELETE = "ctrl_delete"
     CTRL_Z = "ctrl_z"
+    OVERTYPE = "overtype"  # printable/Enter typed over a keyboard selection (v2.5)
+    CUT = "cut"  # Ctrl+X; may be a move, not a deletion - kept distinct (v2.5)
     OTHER = "other"
 
 
@@ -26,6 +28,8 @@ CORRECTION_CATEGORIES = frozenset(
         Category.DELETE,
         Category.CTRL_DELETE,
         Category.CTRL_Z,
+        Category.OVERTYPE,
+        Category.CUT,
     }
 )
 

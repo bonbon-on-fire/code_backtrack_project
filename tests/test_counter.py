@@ -81,6 +81,12 @@ def test_other_is_not_a_correction():
     assert Category.OTHER not in CORRECTION_CATEGORIES
 
 
+def test_overtype_and_cut_are_correction_categories():
+    # v2.5: select-then-type-over and Ctrl+X both remove text.
+    assert Category.OVERTYPE in CORRECTION_CATEGORIES
+    assert Category.CUT in CORRECTION_CATEGORIES
+
+
 # --- Step 2 (v2) test cases from PLANNING.md: per-app tallies ---
 
 
