@@ -49,6 +49,29 @@ def test_summary_includes_every_category_duration_rate_and_ratio():
     assert "25.0%" in summary
 
 
+def test_summary_includes_overtype_and_cut():
+    stats = make_stats([Category.OVERTYPE, Category.OVERTYPE, Category.CUT], duration=60.0)
+    summary = format_summary(stats)
+    assert "Overtype (replace)" in summary
+    assert "Ctrl+X (cut)" in summary
+
+
+def test_status_line_omits_overtype_and_cut():
+    # Decision: keep the live line compact; overtype/cut are summary-only.
+    stats = make_stats([Category.OVERTYPE, Category.CUT], duration=60.0)
+    line = format_status_line(stats)
+    assert "Overtype" not in line
+    assert "cut" not in line.lower()
+
+
+def test_overtype_and_cut_count_toward_correction_ratio():
+    # 2 corrections (overtype + cut) out of 4 total -> 50%.
+    stats = make_stats(
+        [Category.OVERTYPE, Category.CUT, Category.OTHER, Category.OTHER], duration=60.0
+    )
+    assert "50.0%" in format_summary(stats)
+
+
 def test_zero_activity_session_renders_sane_output():
     stats = make_stats([], duration=0.0)
     summary = format_summary(stats)

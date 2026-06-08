@@ -24,6 +24,8 @@ _SUMMARY_NAMES = {
     Category.DELETE: "Delete",
     Category.CTRL_DELETE: "Ctrl+Delete (word)",
     Category.CTRL_Z: "Ctrl+Z (undo)",
+    Category.OVERTYPE: "Overtype (replace)",
+    Category.CUT: "Ctrl+X (cut)",
     Category.OTHER: "Other keys",
 }
 
