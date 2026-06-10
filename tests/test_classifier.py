@@ -3,8 +3,8 @@
 import pytest
 from pynput import keyboard
 
-from backspace_tracker.counter import Category
-from backspace_tracker.listener import EventClassifier, Signal
+from code_backtrack.counter import Category
+from code_backtrack.listener import EventClassifier, Signal
 
 Key = keyboard.Key
 KeyCode = keyboard.KeyCode

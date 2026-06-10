@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from backspace_tracker.__main__ import main
-from backspace_tracker.counter import Category, Counter
-from backspace_tracker.reporter import NO_SESSIONS_HINT, render_apps, render_history
-from backspace_tracker.storage import Storage
+from code_backtrack.__main__ import main
+from code_backtrack.counter import Category, Counter
+from code_backtrack.reporter import NO_SESSIONS_HINT, render_apps, render_history
+from code_backtrack.storage import Storage
 
 
 def make_stats(records, duration=120.0):
@@ -144,7 +144,7 @@ def test_delete_removes_app_rows_too(tmp_path):
 
 
 def test_bare_invocation_runs_tracker(monkeypatch):
-    import backspace_tracker.app as app_module
+    import code_backtrack.app as app_module
 
     called = []
     monkeypatch.setattr(app_module, "run", lambda: called.append(True))

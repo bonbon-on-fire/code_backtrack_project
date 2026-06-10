@@ -1,8 +1,8 @@
 """Step 3 (v2) test cases from PLANNING.md: active-window probe."""
 
-from backspace_tracker import activewindow
-from backspace_tracker.activewindow import foreground_app
-from backspace_tracker.counter import UNKNOWN_APP
+from code_backtrack import activewindow
+from code_backtrack.activewindow import foreground_app
+from code_backtrack.counter import UNKNOWN_APP
 
 
 def test_returns_nonempty_string_on_real_desktop():

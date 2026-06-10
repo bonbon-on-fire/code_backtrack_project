@@ -2,7 +2,7 @@
 
 import pytest
 
-from backspace_tracker.counter import (
+from code_backtrack.counter import (
     CORRECTION_CATEGORIES,
     UNKNOWN_APP,
     Category,

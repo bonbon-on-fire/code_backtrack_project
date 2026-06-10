@@ -64,9 +64,9 @@ corrections happen while coding, and over time, whether that rate changes.
 
 ## v1 Build Order
 - [x] **1. Scaffolding** — `pyproject.toml` (Python 3.12+, pynput), package layout under
-  `src/backspace_tracker/`, `.gitignore`, README stub
-  - Test: `pip install -e .` succeeds; `python -c "import backspace_tracker"` works
-  - Test: `python -m backspace_tracker` starts without error (and exits cleanly)
+  `src/code_backtrack/`, `.gitignore`, README stub
+  - Test: `pip install -e .` succeeds; `python -c "import code_backtrack"` works
+  - Test: `python -m code_backtrack` starts without error (and exits cleanly)
 - [x] **2. Counter core** (`counter.py`) — `Category` enum, `Counter` class with tallies,
   timestamps, derived stats (duration, corrections/min, correction ratio). Pure logic,
   zero I/O, unit tests alongside
@@ -116,7 +116,7 @@ corrections happen while coding, and over time, whether that rate changes.
 - [x] **1. Storage layer** (`storage.py`) — stdlib `sqlite3`; schema:
   `sessions(id, started_at, duration_seconds, <per-category counts>)` and
   `app_counts(session_id, app, <per-category counts>)`; DB at
-  `%LOCALAPPDATA%\backspace-tracker\sessions.db`
+  `%LOCALAPPDATA%\code-backtrack\sessions.db`
   - Test: save→load round-trip preserves every count
   - Test: schema auto-created on a fresh DB
   - Test: multiple sessions ordered by start time
@@ -138,7 +138,7 @@ corrections happen while coding, and over time, whether that rate changes.
   (date, duration, corrections/min, ratio); `apps` shows per-app breakdown
   - Test: output includes saved sessions with v1 reporter formatting
   - Test: empty DB → friendly "no sessions yet"
-  - Test: bare `python -m backspace_tracker` still runs the tracker (unchanged)
+  - Test: bare `python -m code_backtrack` still runs the tracker (unchanged)
 - [x] **6. End-to-end smoke test** (manual) — one session typing in two different
   apps; `history` shows it; `apps` splits counts between the two processes;
   a second session appends, doesn't overwrite
@@ -194,7 +194,7 @@ Invisible and accepted:
   Lesson: a hotkey must be a no-op in apps, not just unbound as a shortcut.)
 - **Ctrl+Z**: counted as its own category (cheap to add; data can't be retrofitted).
 - **v2 dependencies**: none added — ctypes for the window probe (no psutil).
-- **v2 DB location**: `%LOCALAPPDATA%\backspace-tracker\sessions.db` — survives repo
+- **v2 DB location**: `%LOCALAPPDATA%\code-backtrack\sessions.db` — survives repo
   moves; not in the project dir.
 - **v2 app identity**: process name only (window titles leak document/file names,
   violating the privacy principle). Probe failure → key counted under `"unknown"`,

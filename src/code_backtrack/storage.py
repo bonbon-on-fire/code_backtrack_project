@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS app_counts (
 
 def default_db_path() -> Path:
     base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
-    return Path(base) / "backspace-tracker" / "sessions.db"
+    return Path(base) / "code-backtrack" / "sessions.db"
 
 
 @dataclass(frozen=True)

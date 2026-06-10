@@ -2,8 +2,8 @@
 
 import pytest
 
-from backspace_tracker.counter import Category, Counter
-from backspace_tracker.reporter import format_duration, format_status_line, format_summary
+from code_backtrack.counter import Category, Counter
+from code_backtrack.reporter import format_duration, format_status_line, format_summary
 
 
 def make_stats(records=(), duration=60.0):

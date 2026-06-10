@@ -6,8 +6,8 @@ import itertools
 import pytest
 from pynput import keyboard
 
-from backspace_tracker.app import App
-from backspace_tracker.counter import UNKNOWN_APP, Category
+from code_backtrack.app import App
+from code_backtrack.counter import UNKNOWN_APP, Category
 
 Key = keyboard.Key
 KeyCode = keyboard.KeyCode
@@ -106,7 +106,7 @@ def test_summary_printed_on_stop(app, out):
 
 
 def make_app_with_storage(out, tmp_path, probe=lambda: "TestApp.exe"):
-    from backspace_tracker.storage import Storage
+    from code_backtrack.storage import Storage
 
     storage = Storage(tmp_path / "sessions.db")
     app = App(

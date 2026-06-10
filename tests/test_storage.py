@@ -4,8 +4,8 @@ from datetime import datetime
 
 import pytest
 
-from backspace_tracker.counter import Category, Counter
-from backspace_tracker.storage import Storage
+from code_backtrack.counter import Category, Counter
+from code_backtrack.storage import Storage
 
 
 def make_stats(records, duration=60.0):
@@ -131,7 +131,7 @@ def test_old_db_without_v25_columns_migrates_and_loads(tmp_path):
 
 def test_session_with_no_app_counts_loads_empty_breakdown(storage):
     # Direct compute path: a stats object with no per-app data at all.
-    from backspace_tracker.counter import compute_stats
+    from code_backtrack.counter import compute_stats
 
     stats = compute_stats({Category.BACKSPACE: 1}, duration_seconds=10.0)
     storage.save_session(datetime(2026, 6, 6, 9, 0), stats)

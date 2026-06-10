@@ -1,4 +1,4 @@
-"""Entry point: python -m backspace_tracker [run|history|apps|list|delete] [--db PATH]."""
+"""Entry point: python -m code_backtrack [run|history|apps|list|delete] [--db PATH]."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--db", default=None, help="override the database path")
 
-    parser = argparse.ArgumentParser(prog="backspace-tracker", parents=[common])
+    parser = argparse.ArgumentParser(prog="code-backtrack", parents=[common])
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("run", parents=[common], help="run the tracker (default)")
     sub.add_parser("history", parents=[common], help="list saved sessions with stats")

@@ -126,7 +126,7 @@ def run() -> None:
     app = App(storage=Storage())
     listener = keyboard.Listener(on_press=app.on_press, on_release=app.on_release)
     listener.start()
-    print(f"backspace-tracker: idle - press {HOTKEY_HINT} to start recording (Ctrl+C quits)")
+    print(f"code-backtrack: idle - press {HOTKEY_HINT} to start recording (Ctrl+C quits)")
     try:
         while listener.running:
             time.sleep(0.2)  # sleep-poll so Ctrl+C is delivered promptly on Windows
