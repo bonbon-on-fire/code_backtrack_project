@@ -204,7 +204,7 @@ deletes use a fixed estimate, so no text or selection is ever read.
   - `delete_pct = chars_deleted ÷ chars_added` (0 when nothing typed, no crash);
     `net_chars = chars_added − chars_deleted`.
 
-- [ ] **1. New `CHAR` category** (`listener.py` + `counter.py`) — a printable
+- [x] **1. New `CHAR` category** (`listener.py` + `counter.py`) — a printable
   character key (not consumed as overtype/hotkey) classifies as `Category.CHAR`
   instead of folding into `OTHER`. Space/Enter/Tab stay `OTHER`. Total keystrokes
   and the existing correction ratio are unchanged (CHAR just splits out of OTHER).
@@ -212,26 +212,27 @@ deletes use a fixed estimate, so no text or selection is ever read.
   - Test: printable key during a live selection still → `OVERTYPE`, not `CHAR`
   - Test: Ctrl/Alt + letter (shortcuts) → not `CHAR`
   - Test: all v2.5 classifier tests still pass (regression guard)
-- [ ] **2. Char stats** (`counter.py`) — `WORD_DELETE_CHARS` constant; derive
+- [x] **2. Char stats** (`counter.py`) — `WORD_DELETE_CHARS` constant; derive
   `chars_added`, `chars_deleted`, `delete_pct`, `net_chars` in `compute_stats`.
   - Test: typed N printable, M backspaces → added=N, deleted=M, pct=M/N
   - Test: each Ctrl+Backspace / Ctrl+Delete adds 5 to deleted
   - Test: Undo/Overtype/Cut do **not** move the char totals
   - Test: zero typed → delete_pct = 0, no ZeroDivisionError
-- [ ] **3. Storage** (`storage.py`) — persist the `char` count column (added chars);
+- [x] **3. Storage** (`storage.py`) — persist the `char` count column (added chars);
   deleted/pct/net are derived on read from existing columns, so only one new
   column. Old DBs backfilled via `ALTER TABLE ... DEFAULT 0` (same pattern as v2.5).
   - Test: save→load round-trip preserves the char count
   - Test: old DB without the column still loads (migration / default 0)
-- [ ] **4. Reporter** (`reporter.py`) — headline block leads with
+- [x] **4. Reporter** (`reporter.py`) — headline block leads with
   `typed / deleted / delete % / net`; the per-category tallies move below as a
   compact breakdown. `history` shows delete % per session.
   - Test: summary shows added, deleted, delete %, net
   - Test: zero-activity session renders 0s / 0%, no crash
   - Test: `history` rows include delete %
-- [ ] **5. End-to-end smoke test** (manual) — type a known string, delete part of
-  it with backspaces and one Ctrl+Backspace; confirm added/deleted/% match the
-  hand count (± the word-delete estimate).
+- [ ] **5. End-to-end smoke test** (manual, **pending**) — type a known string,
+  delete part of it with backspaces and one Ctrl+Backspace; confirm added/deleted/%
+  match the hand count (± the word-delete estimate). Steps 1–4 are built and
+  unit-tested (141 passing); this is the only step needing a live keyboard hook.
 
 ## Known Limits (accepted blind spots)
 The hook sees keystrokes, not text or selection state. Reading actual text would
