@@ -129,6 +129,63 @@ def test_old_db_without_v25_columns_migrates_and_loads(tmp_path):
     assert len(storage.load_sessions()) == 2
 
 
+# --- v3 test cases from PLANNING.md: char column + migration ---
+
+
+def test_char_count_round_trips(storage):
+    stats = make_stats(
+        [
+            (Category.CHAR, "Code.exe"),
+            (Category.CHAR, "Code.exe"),
+            (Category.CHAR, "Code.exe"),
+            (Category.BACKSPACE, "Code.exe"),
+        ]
+    )
+    storage.save_session(datetime(2026, 6, 9, 11, 0), stats)
+    [record] = storage.load_sessions()
+    assert record.stats.counts[Category.CHAR] == 3
+    assert record.stats.app_counts["Code.exe"][Category.CHAR] == 3
+    # derived char stats survive the round-trip
+    assert record.stats.chars_added == 3
+    assert record.stats.chars_deleted == 1
+    assert record.stats.delete_pct == pytest.approx(1 / 3)
+
+
+def test_old_db_without_char_column_migrates_and_loads(tmp_path):
+    import sqlite3
+
+    # Pre-v3 DB: has the v2.5 columns (overtype/cut) but no "char" column yet.
+    db_path = tmp_path / "pre_v3.db"
+    cols = [
+        "backspace", "ctrl_backspace", "delete", "ctrl_delete",
+        "ctrl_z", "overtype", "cut", "other",
+    ]
+    quoted = ", ".join(f'"{c}"' for c in cols)
+    ddl = ", ".join(f'"{c}" INTEGER NOT NULL' for c in cols)
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            f"CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            f"started_at TEXT NOT NULL, duration_seconds REAL NOT NULL, {ddl})"
+        )
+        conn.execute(
+            f"CREATE TABLE app_counts (session_id INTEGER NOT NULL, app TEXT NOT NULL, "
+            f"{ddl}, PRIMARY KEY (session_id, app))"
+        )
+        conn.execute(
+            f"INSERT INTO sessions (started_at, duration_seconds, {quoted}) "
+            f"VALUES ('2026-06-01T10:00:00', 30.0, 4, 0, 0, 0, 0, 0, 0, 9)"
+        )
+
+    storage = Storage(db_path)  # opening must add the char column, not crash
+    [record] = storage.load_sessions()
+    assert record.stats.counts[Category.CHAR] == 0  # backfilled default
+    assert record.stats.chars_added == 0
+    # a new session carrying CHAR counts saves fine into the migrated DB
+    storage.save_session(datetime(2026, 6, 9, 9, 0), make_stats([(Category.CHAR, "Code.exe")]))
+    rec1, rec2 = storage.load_sessions()
+    assert rec2.stats.counts[Category.CHAR] == 1
+
+
 def test_session_with_no_app_counts_loads_empty_breakdown(storage):
     # Direct compute path: a stats object with no per-app data at all.
     from code_backtrack.counter import compute_stats
