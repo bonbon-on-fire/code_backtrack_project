@@ -9,6 +9,8 @@ description = "Counts correction keystrokes (Backspace, Delete, Ctrl+Z) while yo
 requires-python = ">=3.12"
 dependencies = [
     "pynput>=1.7.6",
+    "pystray>=0.19",
+    "Pillow>=10",
 ]
 
 [project.optional-dependencies]
