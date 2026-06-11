@@ -51,10 +51,14 @@ class App:
     def recording(self) -> bool:
         return self._counter is not None
 
+    def current_stats(self) -> SessionStats | None:
+        """Live stats while recording, else None. Used by the tray view."""
+        return self._counter.stats() if self._counter is not None else None
+
     def on_press(self, key: keyboard.Key | keyboard.KeyCode) -> None:
         result = self._classifier.on_press(key)
         if result is Signal.TOGGLE:
-            self._toggle()
+            self.toggle()
         elif isinstance(result, Category) and self._counter is not None:
             self._counter.record(result, app=self._probe())
             self._show_status()
@@ -67,7 +71,9 @@ class App:
         if self._counter is not None:
             self._stop_session()
 
-    def _toggle(self) -> None:
+    def toggle(self) -> None:
+        """Start a session if idle, otherwise stop and finalize it. Shared by the
+        Ctrl+Alt+B hotkey and the tray menu."""
         if self._counter is None:
             self._counter = Counter(clock=self._clock)
             self._counter.start()
