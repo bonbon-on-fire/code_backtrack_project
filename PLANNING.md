@@ -52,7 +52,7 @@ corrections happen while coding, and over time, whether that rate changes.
 | Ctrl+Backspace | word-level correction (size unknown) | −5 deleted (estimate) |
 | Ctrl+Delete | forward word delete (size unknown) | −5 deleted (estimate) |
 | Ctrl+Z | undo (heaviest correction) — own category | not in char totals (no sane estimate) |
-| Overtype | printable key while a keyboard-made selection is active (v2.5) | not in char totals (selection size unknown) |
+| Overtype | **retired in v3** — heuristic removed; enum/column kept for stored history | never produced |
 | Ctrl+X | cut — may be deletion or move; own category (v2.5) | not in char totals (selection size unknown) |
 | Space / Enter / Tab / nav / function keys | counted only toward total, never identified | not added (by decision) |
 
@@ -176,12 +176,13 @@ no mouse hook — see Known Limits).
   - Test: old DBs still load (column migration or default 0)
 - [x] **3. Reporter** — OVERTYPE/CUT in the summary only (live status line kept
   compact, by decision)
-- [ ] **4. Scripted verification session** (manual, **deferred**) — ~15 editing
-  behaviors (select-replace, cut-paste, undo chains, autocomplete accept,
-  multi-cursor) performed in a real editor; diff expected vs actual counts; record
-  results here. Code is complete and fully unit-tested (123 passing); this is the
-  one step requiring a live keyboard hook, so it's pending a hands-on session
-  (checklist ready in `tests/v2.5_manual_verification.md`).
+- [~] **4. Scripted verification session** (manual) — **won't do, superseded by
+  v3.** The v3 character model retired the OVERTYPE selection heuristic this step
+  was meant to validate (printable keys now always count as CHAR). The remaining
+  v2.5 behaviors (single/word deletes, cut, undo) are covered by unit tests and the
+  v3 smoke test, so a dedicated hands-on session adds no value. The checklist in
+  `tests/v2.5_manual_verification.md` is kept for reference but its overtype rows
+  are obsolete.
 
 ## v3 Build Order — meaningful metric (chars added vs deleted)
 The pile of per-category counts never resolved into one readable number. v3 adds a
@@ -267,11 +268,17 @@ Invisible and accepted:
   numeric id. The integer id remains internal to SQLite as a join key.
 - **Key-repeat**: every repeat counts — each repeat deletes a real character, so it's
   genuine correction volume. No thresholding in v1.
-- **v2.5 overtype trigger**: printable characters + Enter replace a live selection
-  (counted OVERTYPE). Tab stays OTHER — Tab over a selection is usually indent, and
-  the false-positive risk isn't worth the rare catch.
+- **v2.5 overtype trigger** (*superseded by v3*): printable characters + Enter
+  replaced a live selection (counted OVERTYPE). Tab stayed OTHER.
 - **v2.5 reporter**: OVERTYPE/CUT appear in the session summary only; the live status
   line stays compact with the original five categories.
+- **v3 retires the overtype heuristic**: the v2.5 keyboard-selection state machine
+  was removed — a printable key now always counts as CHAR. The heuristic could
+  *mis-divert* a normal typed character into OVERTYPE (false-positive selection
+  guess), under-counting "Typed (added)"; its magnitude was never measurable anyway.
+  Net effect: a more trustworthy added-char count. CUT and CTRL_Z are unaffected.
+  The OVERTYPE enum member, DB column, and reporter label are kept (no longer
+  produced) so previously-saved sessions still load and display.
 - **v3 char metric**: the headline becomes chars added vs deleted + delete %. The
   per-category counts were technically correct but never added up to one readable
   signal; the character view answers "how much of what I type do I delete."

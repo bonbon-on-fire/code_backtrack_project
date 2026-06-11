@@ -16,7 +16,7 @@ class Category(Enum):
     DELETE = "delete"
     CTRL_DELETE = "ctrl_delete"
     CTRL_Z = "ctrl_z"
-    OVERTYPE = "overtype"  # printable/Enter typed over a keyboard selection (v2.5)
+    OVERTYPE = "overtype"  # legacy (v2.5): heuristic retired in v3, kept for stored history
     CUT = "cut"  # Ctrl+X; may be a move, not a deletion - kept distinct (v2.5)
     OTHER = "other"
     CHAR = "char"  # a typed content character (letter/digit/symbol) - added text (v3)
