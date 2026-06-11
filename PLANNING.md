@@ -237,6 +237,43 @@ deletes use a fixed estimate, so no text or selection is ever read.
   Typed=10, Deleted=8, Delete %=80.0%, Net=2; word-delete estimate applied as
   expected. Note: stale running process must be restarted to pick up new builds.)
 
+## v4 Build Order — system-tray daily driver
+A tray icon so the tracker runs alongside work without a terminal. **Storage-free
+for now** (live-only; sessions discarded on stop — see Decisions). Keeps the
+console `run` untouched and adds a separate `tray` subcommand. New deps:
+`pystray`, `Pillow` (first beyond pynput).
+
+- UX: grey icon = idle, red = recording. The hotkey (Ctrl+Alt+B) and a menu
+  `Start/Stop recording` both toggle. Tooltip + disabled menu lines show live
+  stats (typed / delete % / duration). Stop shows the summary as a notification,
+  then discards. Quit stops the hook and the icon cleanly.
+
+- [ ] **1. Tray tooltip/stat formatter** (`reporter.py`) — pure
+  `format_tray_tooltip(stats, recording)` → one short line.
+  - Test: idle → "idle" text, no counts
+  - Test: recording → includes typed, delete %, duration
+  - Test: zero-activity recording → sane (0 / 0%), no crash
+- [ ] **2. Runtime icon images** (`tray.py`) — Pillow-drawn idle/recording
+  circles; no asset files shipped. Add `pystray`/`Pillow` to `pyproject.toml`.
+  - Test: returns an image of the expected size/mode for each state
+- [ ] **3. Tray controller** (`tray.py`) — thin class binding `App` (with
+  `storage=None`) to an injected icon: builds the menu (Start/Stop, stat lines,
+  Quit), toggles under a `threading.Lock`, refreshes tooltip/menu from app state.
+  The icon is injected so the logic is testable with a fake.
+  - Test: menu Start/Stop label flips with `app.recording`
+  - Test: the menu toggle action calls the app toggle
+  - Test: tooltip / stat lines reflect current app stats (fake icon)
+  - Test: stop produces the summary text used for the notification
+- [ ] **4. Wire-up + `tray` subcommand** (`__main__.py`, `tray.py`) — `python -m
+  code_backtrack tray` starts the pynput listener, an updater daemon (~1s), and
+  `icon.run()` on the main thread; Quit / Ctrl+C stop both. Console `run` and the
+  bare invocation are unchanged.
+  - Test: parser routes `tray` to the tray entry (entry mocked, no real icon)
+  - Test: bare invocation + `run`/`history`/etc. still behave as before
+- [ ] **5. End-to-end smoke test** (manual) — launch `tray`; icon appears idle;
+  hotkey + menu both start/stop; tooltip updates live; recording icon turns red;
+  stop shows the summary notification; Quit exits cleanly.
+
 ## Known Limits (accepted blind spots)
 The hook sees keystrokes, not text or selection state. Reading actual text would
 require accessibility APIs — keylogger territory, against the privacy principle.
@@ -293,6 +330,12 @@ Invisible and accepted:
 - **v3 added = content only**: Space/Enter/Tab are NOT counted as added characters —
   the metric is about typed *content*, and whitespace would inflate "added" and
   deflate the delete %.
+- **v4 tray does not persist (for now)**: tray mode runs with no storage —
+  sessions are live-only and discarded on stop (summary shown via notification, no
+  save prompt). `App` already supports this via `storage=None`. Sidesteps the
+  GUI save-dialog question and needs no `tkinter`. Console `run` keeps its opt-in
+  SQLite saving; only the tray front-end is storage-free. Revisit if persistent
+  tray sessions are wanted later.
 
 ## Open Questions
 - (none open)
