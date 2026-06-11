@@ -28,8 +28,20 @@ def test_plain_delete(classifier):
     assert classifier.on_press(Key.delete) is Category.DELETE
 
 
-def test_letter_is_other(classifier):
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+def test_letter_is_char(classifier):
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR
+
+
+@pytest.mark.parametrize("ch", ["a", "Z", "5", "$", ";"])
+def test_printable_content_keys_are_char(classifier, ch):
+    # Letters, digits, and symbols are typed content -> added characters (v3).
+    assert classifier.on_press(KeyCode.from_char(ch)) is Category.CHAR
+
+
+@pytest.mark.parametrize("key", [Key.space, Key.enter, Key.tab])
+def test_space_enter_tab_are_other_not_char(classifier, key):
+    # Structure, not content: excluded from "added" by decision (v3).
+    assert classifier.on_press(key) is Category.OTHER
 
 
 def test_ctrl_backspace(classifier):
@@ -86,8 +98,8 @@ def test_alt_b_without_ctrl_is_other(classifier):
     assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
 
 
-def test_plain_b_is_other(classifier):
-    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+def test_plain_b_is_char(classifier):
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.CHAR
 
 
 def test_ctrl_shift_backspace_is_word_correction_not_toggle(classifier):
@@ -190,7 +202,7 @@ def test_plain_arrow_collapses_selection_no_overtype(classifier):
     classifier.on_press(Key.right)  # select
     release(classifier, Key.shift)
     assert classifier.on_press(Key.right) is Category.OTHER  # plain arrow collapses
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR  # typed, not overtype
 
 
 def test_escape_collapses_selection_no_overtype(classifier):
@@ -198,7 +210,7 @@ def test_escape_collapses_selection_no_overtype(classifier):
     classifier.on_press(Key.right)
     release(classifier, Key.shift)
     assert classifier.on_press(Key.esc) is Category.OTHER
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR  # typed, not overtype
 
 
 def test_copy_keeps_selection_then_letter_is_overtype(classifier):
@@ -211,12 +223,12 @@ def test_copy_keeps_selection_then_letter_is_overtype(classifier):
     assert classifier.on_press(KeyCode.from_char("a")) is Category.OVERTYPE
 
 
-def test_overtype_clears_selection_next_letter_is_other(classifier):
+def test_overtype_clears_selection_next_letter_is_char(classifier):
     press_chord(classifier, Key.shift)
     classifier.on_press(Key.right)
     release(classifier, Key.shift)
     assert classifier.on_press(KeyCode.from_char("a")) is Category.OVERTYPE
-    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.CHAR  # flag cleared
 
 
 def test_paste_over_selection_is_overtype(classifier):
@@ -238,7 +250,7 @@ def test_delete_over_selection_counts_as_delete_not_overtype(classifier):
     release(classifier, Key.shift)
     assert classifier.on_press(Key.delete) is Category.DELETE
     # selection consumed: a following letter is not an overtype
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR
 
 
 def test_backspace_over_selection_counts_as_backspace_not_overtype(classifier):
@@ -246,7 +258,7 @@ def test_backspace_over_selection_counts_as_backspace_not_overtype(classifier):
     classifier.on_press(Key.right)
     release(classifier, Key.shift)
     assert classifier.on_press(Key.backspace) is Category.BACKSPACE
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR
 
 
 def test_ctrl_x_is_cut(classifier):
@@ -272,7 +284,7 @@ def test_cut_clears_selection(classifier):
     press_chord(classifier, Key.ctrl_l)
     assert classifier.on_press(KeyCode.from_char("x")) is Category.CUT
     release(classifier, Key.ctrl_l)
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR
 
 
 def test_held_ctrl_z_counts_each_repeat(classifier):
@@ -282,8 +294,8 @@ def test_held_ctrl_z_counts_each_repeat(classifier):
     assert results == [Category.CTRL_Z] * 4
 
 
-def test_printable_without_selection_is_other(classifier):
-    assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
+def test_printable_without_selection_is_char(classifier):
+    assert classifier.on_press(KeyCode.from_char("a")) is Category.CHAR
 
 
 def test_ctrl_a_with_shift_is_other_no_selection(classifier):
@@ -291,4 +303,4 @@ def test_ctrl_a_with_shift_is_other_no_selection(classifier):
     press_chord(classifier, Key.ctrl_l, Key.shift)
     assert classifier.on_press(KeyCode.from_char("a")) is Category.OTHER
     release(classifier, Key.ctrl_l, Key.shift)
-    assert classifier.on_press(KeyCode.from_char("b")) is Category.OTHER
+    assert classifier.on_press(KeyCode.from_char("b")) is Category.CHAR  # plain, after release

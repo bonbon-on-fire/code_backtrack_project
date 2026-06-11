@@ -153,6 +153,12 @@ class EventClassifier:
             self._selection_active = False
             return Category.OVERTYPE
 
+        if _is_printable(key) and not ctrl and not alt:
+            # A typed content character (letter/digit/symbol) = added text (v3).
+            # Space/Enter/Tab arrive as special keys (no .char), so they fall
+            # through to OTHER - structure, not content, excluded from "added".
+            return Category.CHAR
+
         return Category.OTHER
 
     def on_release(self, key: keyboard.Key | keyboard.KeyCode) -> None:
