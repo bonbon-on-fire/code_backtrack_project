@@ -288,5 +288,5 @@ A tool that measures how much of what you type you end up deleting by counting c
 
 ---
 
-**Project Duration:** June 2026
+**Project Duration:** June 2026  
 **Technologies:** Python 3.12+, pynput (global keyboard hook), pystray + Pillow (system tray), SQLite (stdlib `sqlite3`), ctypes (Windows API), pytest
