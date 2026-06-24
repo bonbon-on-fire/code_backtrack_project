@@ -1,4 +1,4 @@
-# Code Backtrack 2026
+# Code Backtrack
 
 ## Project Overview
 
